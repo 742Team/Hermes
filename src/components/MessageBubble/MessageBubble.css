@@ -1,0 +1,138 @@
+.message-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--spacing-md);
+  animation: messageAppear 0.3s ease-out;
+}
+
+.message-bubble {
+  max-width: 70%;
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  position: relative;
+}
+
+.sent .message-bubble {
+  align-self: flex-end;
+  background-color: var(--accent-color);
+  color: white;
+  border-bottom-right-radius: var(--radius-xs);
+  margin-left: auto;
+}
+
+.received .message-bubble {
+  align-self: flex-start;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-bottom-left-radius: var(--radius-xs);
+}
+
+.message-text {
+  font-size: 14px;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.message-meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: var(--spacing-xs);
+  font-size: 11px;
+}
+
+.sent .message-meta {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.received .message-meta {
+  color: var(--text-secondary);
+}
+
+.message-time {
+  margin-right: var(--spacing-xs);
+}
+
+.message-status {
+  display: flex;
+  align-items: center;
+}
+
+.message-status.read {
+  color: #34C759;
+}
+
+.timestamp-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: var(--spacing-md) 0;
+}
+
+.timestamp-divider span {
+  font-size: 12px;
+  color: var(--text-secondary);
+  background-color: var(--bg-primary);
+  padding: 0 var(--spacing-md);
+}
+
+.attachment-container {
+  margin-bottom: var(--spacing-sm);
+}
+
+.image-attachment {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  max-width: 250px;
+}
+
+.image-attachment img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.file-attachment {
+  display: flex;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm);
+}
+
+.received .file-attachment {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.file-icon {
+  font-size: 24px;
+  margin-right: var(--spacing-sm);
+}
+
+.file-details {
+  flex: 1;
+}
+
+.file-name {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+.file-size {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .received .message-bubble {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .received .file-attachment {
+  background-color: rgba(255, 255, 255, 0.05);
+}

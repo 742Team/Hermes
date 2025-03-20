@@ -1,3 +1,135 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+}
+
+/* Supprimons les styles redondants et gardons uniquement ce qui est nécessaire */
+.app {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Responsive layout */
+@media (max-width: 768px) {
+  .app {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    height: auto;
+    max-height: 40%;
+  }
+
+  .chat-interface {
+    height: 60%;
+  }
+}
+
+/* Electron window controls */
+.window-controls {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  -webkit-app-region: drag; /* Pour permettre de déplacer la fenêtre */
+}
+
+.window-control-button {
+  -webkit-app-region: no-drag; /* Pour permettre de cliquer sur les boutons */
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin: 0 4px;
+  cursor: pointer;
+}
+
+.window-control-close {
+  background-color: #ff5f57;
+}
+
+.window-control-minimize {
+  background-color: #ffbd2e;
+}
+
+.window-control-maximize {
+  background-color: #28c940;
+}
+
+/* Styles pour la zone de chat principale */
+.chat-interface {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Styles pour l'état vide */
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  padding: var(--spacing-xl);
+  text-align: center;
+}
+
+.empty-state-icon {
+  margin-bottom: var(--spacing-lg);
+  color: var(--text-secondary);
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+}
+
+.empty-state p {
+  font-size: 14px;
+  max-width: 300px;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+}
+
 .App {
   text-align: center;
 }
