@@ -92,28 +92,67 @@
   display: block;
 }
 
-.file-attachment {
+.message-html-content {
+  width: 100%;
+}
+
+.message-html-content audio,
+.message-html-content video {
+  max-width: 100%;
+  border-radius: 8px;
+  margin: 8px 0;
+}
+
+.message-html-content img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin: 8px 0;
+}
+
+.message-html-content .media-embed {
+  max-width: 100%;
+  margin: 8px 0;
+}
+
+/* Ensure embedded audio has proper styling */
+.embedded-audio {
+  width: 300px;
+  max-width: 100%;
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Add these styles for file attachments */
+.message-html-content .file-attachment {
   display: flex;
   align-items: center;
   background-color: rgba(0, 0, 0, 0.1);
   border-radius: var(--radius-md);
   padding: var(--spacing-sm);
+  margin: 8px 0;
 }
 
-.received .file-attachment {
+.received .message-html-content .file-attachment {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-.file-icon {
+.sent .message-html-content .file-attachment {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.message-html-content .file-icon {
   font-size: 24px;
   margin-right: var(--spacing-sm);
+  color: inherit;
 }
 
-.file-details {
+.message-html-content .file-details {
   flex: 1;
+  overflow: hidden;
 }
 
-.file-name {
+.message-html-content .file-name {
   font-size: 13px;
   font-weight: 500;
   margin-bottom: 2px;
@@ -123,16 +162,32 @@
   max-width: 180px;
 }
 
-.file-size {
+.message-html-content .file-size {
   font-size: 11px;
   opacity: 0.7;
 }
 
+.message-html-content .file-download {
+  background-color: var(--accent-color);
+  color: white;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.message-html-content .file-download:hover {
+  background-color: var(--accent-color-dark, #0A6ECC);
+  text-decoration: none;
+}
+
 /* Dark mode adjustments */
-[data-theme="dark"] .received .message-bubble {
+[data-theme="dark"] .message-html-content .file-attachment {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-[data-theme="dark"] .received .file-attachment {
-  background-color: rgba(255, 255, 255, 0.05);
+[data-theme="dark"] .message-html-content .file-download {
+  background-color: var(--accent-color);
 }

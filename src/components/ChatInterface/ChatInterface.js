@@ -233,37 +233,49 @@ const ChatInterface = ({ conversation, currentUser }) => {
     const unsubscribeAuth = AuthService.onMessage((message) => {
       console.log('Message reçu depuis AuthService:', message);
       
-      // Traiter le message
-      if (typeof message === 'string') {
-        // Pour les messages texte bruts
-        const newMessage = {
-          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-          content: message,
-          timestamp: new Date().toISOString(),
-          isRawText: true
-        };
-        setMessages(prev => {
-          // Vérifier si le message n'est pas déjà présent
-          const isDuplicate = prev.some(m => 
-            m.isRawText && m.content === message
-          );
-          return isDuplicate ? prev : [...prev, newMessage];
-        });
-      } else if (message.type === 'message' && message.content) {
-        // Pour les messages formatés
-        const newMessage = {
-          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      // Check if the message is already in the correct format
+      if (message && typeof message === 'object' && message.type === 'html_content') {
+        // Add the message directly to the messages state
+        setMessages(prevMessages => [...prevMessages, {
+          id: Date.now().toString(),
           content: message.content,
-          timestamp: message.timestamp || new Date().toISOString(),
-          isRawText: true
-        };
-        setMessages(prev => {
-          // Vérifier si le message n'est pas déjà présent
-          const isDuplicate = prev.some(m => 
-            (m.content === message.content)
-          );
-          return isDuplicate ? prev : [...prev, newMessage];
-        });
+          sender: message.sender,
+          timestamp: message.timestamp,
+          isHtml: true,
+          isSent: message.sender === currentUser?.username
+        }]);
+      } 
+      // If it's a string message
+      else if (typeof message === 'string') {
+        // Check if it's a server message with HTML
+        if (message.includes('<span style=') || message.includes('<div class=')) {
+          // Extract sender if possible
+          let sender = 'Server';
+          const senderMatch = message.match(/<span style='color: #[A-F0-9]+'>(.*?)<\/span>/);
+          if (senderMatch && senderMatch[1]) {
+            sender = senderMatch[1];
+          }
+          
+          setMessages(prevMessages => [...prevMessages, {
+            id: Date.now().toString(),
+            content: message,
+            sender: sender,
+            timestamp: new Date().toISOString(),
+            isHtml: true,
+            isSent: sender === currentUser?.username
+          }]);
+        } 
+        // Regular text message
+        else {
+          setMessages(prevMessages => [...prevMessages, {
+            id: Date.now().toString(),
+            content: message,
+            sender: 'Unknown',
+            timestamp: new Date().toISOString(),
+            isHtml: false,
+            isSent: false
+          }]);
+        }
       }
     });
   
@@ -557,3 +569,15 @@ const ChatInterface = ({ conversation, currentUser }) => {
 };
 
 export default ChatInterface;
+
+// Remove these lines that are causing the errors:
+// {messages.map((msg) => (
+//   <MessageBubble
+//     key={msg.id}
+//     message={msg.isHtml ? { type: 'html_content', content: msg.content } : msg.content}
+//     isSent={msg.isSent || msg.sender === currentUser?.username}
+//     timestamp={msg.timestamp}
+//     isRead={msg.isRead}
+//     showTimestamp={false}
+//   />
+// ))}

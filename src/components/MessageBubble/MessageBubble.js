@@ -11,99 +11,92 @@ const MessageBubble = ({
   attachment,
   isOwnMessage
 }) => {
-  // Fonction pour extraire le contenu du message
+  // Function to extract the content from the message
+  // Update the getMessageContent function to better handle HTML content
   const getMessageContent = () => {
-    // Si le message est une chaîne de caractères
+    // If the message is an object with type 'html_content'
+    if (message && typeof message === 'object' && message.type === 'html_content') {
+      return message.content;
+    }
+    
+    // If the message is a string
     if (typeof message === 'string') {
-      // Vérifier s'il s'agit d'un message formaté du serveur
-      if (message.includes('<span style=\'color: #FFFFFF\'>')) {
-        // Extraire le contenu du message après le nom d'utilisateur
-        const parts = message.split('</span>');
-        if (parts.length > 1) {
-          return parts[1].trim();
-        }
+      // Check if it's a server-formatted message with HTML
+      if (message.includes('<span style=') || 
+          message.includes('media-embed') || 
+          message.includes('file-attachment')) {
+        return message;
       }
       return message;
     }
     
-    // Si le message est un objet avec une propriété content
-    if (message && message.content) {
-      if (typeof message.content === 'string' && message.content.includes('<span style=\'color: #FFFFFF\'>')) {
-        const parts = message.content.split('</span>');
-        if (parts.length > 1) {
-          return parts[1].trim();
-        }
-      }
-      return message.content;
-    }
-    
-    // Si aucun format reconnu
-    return '';
+    // Default case
+    return JSON.stringify(message);
   };
   
-  // Fonction pour extraire le nom de l'expéditeur
-  const getSenderName = () => {
-    if (typeof message === 'string' && message.includes('<span style=\'color: #FFFFFF\'>')) {
-      const regex = /<span style='color: #FFFFFF'>(.*?)<\/span>/;
-      const match = message.match(regex);
-      return match ? match[1] : 'Inconnu';
-    }
-    
-    if (message && message.content && typeof message.content === 'string' && 
-        message.content.includes('<span style=\'color: #FFFFFF\'>')) {
-      const regex = /<span style='color: #FFFFFF'>(.*?)<\/span>/;
-      const match = message.content.match(regex);
-      return match ? match[1] : 'Inconnu';
-    }
-    
-    if (message && message.senderName) {
-      return message.senderName;
-    }
-    
-    if (message && message.sender) {
-      return message.sender;
-    }
-    
-    return isSent ? 'Vous' : 'Inconnu';
+  // Function to render HTML content safely
+  // Improve the renderHtmlContent function to better handle HTML entities
+  const renderHtmlContent = (htmlContent) => {
+    // Decode HTML entities if needed
+    const decodedContent = htmlContent
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#039;/g, "'")
+      .replace(/&amp;/g, '&');
+      
+    return (
+      <div 
+        className="message-html-content"
+        dangerouslySetInnerHTML={{ __html: decodedContent }} 
+      />
+    );
   };
   
-  // Obtenir le contenu et l'expéditeur du message
-  const messageContent = getMessageContent();
-  const senderName = getSenderName();
-  
-  // Extraire l'horodatage du message
-  const getMessageTimestamp = () => {
-    if (timestamp) return timestamp;
-    
-    if (typeof message === 'string' && message.includes('[')) {
-      const regex = /\[(.*?)\]/;
-      const match = message.match(regex);
-      return match ? match[1] : '';
-    }
-    
-    if (message && message.content && typeof message.content === 'string' && 
-        message.content.includes('[')) {
-      const regex = /\[(.*?)\]/;
-      const match = message.content.match(regex);
-      return match ? match[1] : '';
-    }
-    
-    if (message && message.timestamp) {
-      return new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-    
-    return '';
+  // Function to determine if content contains HTML
+  const containsHtml = (content) => {
+    return typeof content === 'string' && (
+      content.includes('<div') || 
+      content.includes('<span') || 
+      content.includes('<audio') || 
+      content.includes('<video') || 
+      content.includes('<img') ||
+      content.includes('<a') ||
+      content.includes('&lt;') // For encoded HTML
+    );
   };
   
-  const messageTimestamp = getMessageTimestamp();
+  // Extract text from HTML content for plain display
+  const extractTextFromHtml = (htmlContent) => {
+    // Simple regex to remove HTML tags
+    return htmlContent.replace(/<[^>]*>/g, '');
+  };
   
+  // Render the message content
+  const renderMessageContent = () => {
+    const content = getMessageContent();
+    
+    // If content contains HTML, render it as HTML
+    if (containsHtml(content)) {
+      return renderHtmlContent(content);
+    }
+    
+    // Otherwise render as plain text
+    return <p className="message-text">{content}</p>;
+  };
+  
+  // Format the timestamp
+  const messageTimestamp = timestamp ? new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+
   return (
     <div className={`message-container ${isSent ? 'sent' : 'received'}`}>
-      {!isSent && (
-        <div className="message-sender">{senderName}</div>
+      {showTimestamp && (
+        <div className="timestamp-divider">
+          <span>{messageTimestamp}</span>
+        </div>
       )}
       
-      <div className="message-bubble">
+      <div className={`message-bubble ${isSent ? 'sent' : 'received'}`}>
         {hasAttachment && attachment && (
           <div className="attachment-container">
             {attachment.type === 'image' ? (
@@ -112,51 +105,29 @@ const MessageBubble = ({
               </div>
             ) : (
               <div className="file-attachment">
-                <div className="file-icon">📄</div>
+                <span className="file-icon">📎</span>
                 <div className="file-details">
                   <div className="file-name">{attachment.name}</div>
-                  <div className="file-size">{formatFileSize(attachment.size)}</div>
+                  <div className="file-size">{attachment.size}</div>
                 </div>
               </div>
             )}
           </div>
         )}
         
-        {messageContent && <div className="message-text">{messageContent}</div>}
+        {renderMessageContent()}
         
         <div className="message-meta">
           <span className="message-time">{messageTimestamp}</span>
           {isSent && (
             <span className={`message-status ${isRead ? 'read' : ''}`}>
-              {isRead ? (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M18 7L9.42857 17L6 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              ) : (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              )}
+              {isRead ? '✓✓' : '✓'}
             </span>
           )}
         </div>
       </div>
-      
-      {showTimestamp && (
-        <div className="timestamp-divider">
-          <span>{messageTimestamp}</span>
-        </div>
-      )}
     </div>
   );
-};
-
-// Helper function to format file size
-const formatFileSize = (bytes) => {
-  if (!bytes) return '';
-  if (bytes < 1024) return bytes + ' B';
-  else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-  else return (bytes / 1048576).toFixed(1) + ' MB';
 };
 
 export default MessageBubble;

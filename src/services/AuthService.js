@@ -340,11 +340,41 @@ class AuthService {
           const message = event.data;
           console.log('Received message:', message);
           
-          // Notifier les écouteurs de messages
+          // Check if message contains HTML content
+          const containsHtml = typeof message === 'string' && (
+            message.includes('<div') || 
+            message.includes('<span') || 
+            message.includes('<audio') || 
+            message.includes('<video') || 
+            message.includes('<img') ||
+            message.includes('<a')
+          );
+          
+          // Process message before sending to listeners
+          let processedMessage = message;
+          
+          // If message contains HTML, convert to a structured format
+          if (containsHtml) {
+            // Extract sender from the message if possible
+            let sender = 'Server';
+            const senderMatch = message.match(/<span style='color: #[A-F0-9]+'>(.*?)<\/span>/);
+            if (senderMatch && senderMatch[1]) {
+              sender = senderMatch[1];
+            }
+            
+            processedMessage = {
+              type: 'html_content',
+              content: message,
+              timestamp: new Date().toISOString(),
+              sender: sender
+            };
+          }
+          
+          // Notify message listeners
           if (this.messageListeners && this.messageListeners.length > 0) {
             this.messageListeners.forEach(listener => {
               try {
-                listener(message);
+                listener(processedMessage);
               } catch (error) {
                 console.error('Error in message listener:', error);
               }
