@@ -12,14 +12,26 @@ function createWindow() {
     minWidth: 800,
     minHeight: 600,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-      preload: path.join(__dirname, 'preload.js')
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js'),
+      webSecurity: true,
+      allowRunningInsecureContent: false
     },
     titleBarStyle: 'hiddenInset', // Style Apple avec barre de titre intégrée
     vibrancy: 'under-window', // Effet de verre dépoli (macOS)
     visualEffectState: 'active',
     backgroundColor: '#00ffffff' // Transparent pour permettre l'effet de verre
+  });
+
+  // Set Content Security Policy
+  mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': ["default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' http://195.35.1.108:* ws://195.35.1.108:*"]
+      }
+    });
   });
 
   const startUrl = isDev

@@ -59,4 +59,8 @@ class StorageService {
   }
 }
 
-export default new StorageService();
+// At the end of the file, replace:
+// export default new StorageService();
+// with:
+const storageServiceInstance = new StorageService();
+export default storageServiceInstance;

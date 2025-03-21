@@ -86,4 +86,8 @@ class ThemeService {
   }
 }
 
-export default new ThemeService();
+// At the end of the file, replace:
+// export default new ThemeService();
+// with:
+const themeServiceInstance = new ThemeService();
+export default themeServiceInstance;

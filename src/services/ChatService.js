@@ -213,4 +213,8 @@ class ChatService {
   }
 }
 
-export default new ChatService();
+// At the end of the file, replace:
+// export default new ChatService();
+// with:
+const chatServiceInstance = new ChatService();
+export default chatServiceInstance;
