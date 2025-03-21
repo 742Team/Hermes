@@ -233,35 +233,53 @@ const ChatInterface = ({ conversation, currentUser }) => {
     const unsubscribeAuth = AuthService.onMessage((message) => {
       console.log('Message reçu depuis AuthService:', message);
       
+      // Helper function to clean HTML tags
+      const cleanHtmlTags = (text) => {
+        if (typeof text !== 'string') return text;
+        
+        // First remove the timestamp in square brackets at the beginning
+        const withoutTimestamp = text.replace(/^\[[\d:]+\]\s*/, '');
+        
+        // Then remove HTML tags
+        return withoutTimestamp.replace(/<[^>]*>/g, '');
+      };
+      
+      // Extract sender from HTML message
+      const extractSender = (htmlContent) => {
+        const senderMatch = htmlContent.match(/<span style='color: #[A-F0-9]+'>(.*?)<\/span>/);
+        return senderMatch && senderMatch[1] ? senderMatch[1] : 'Server';
+      };
+      
       // Check if the message is already in the correct format
       if (message && typeof message === 'object' && message.type === 'html_content') {
+        // Extract sender and clean content
+        const sender = extractSender(message.content);
+        const cleanContent = cleanHtmlTags(message.content.replace(/<span style='color: #[A-F0-9]+'>(.*?)<\/span>/, ''));
+        
         // Add the message directly to the messages state
         setMessages(prevMessages => [...prevMessages, {
           id: Date.now().toString(),
-          content: message.content,
-          sender: message.sender,
+          content: cleanContent,
+          sender: sender,
           timestamp: message.timestamp,
-          isHtml: true,
-          isSent: message.sender === currentUser?.username
+          isHtml: false, // No longer HTML since we cleaned it
+          isSent: sender === currentUser?.username
         }]);
       } 
       // If it's a string message
       else if (typeof message === 'string') {
         // Check if it's a server message with HTML
         if (message.includes('<span style=') || message.includes('<div class=')) {
-          // Extract sender if possible
-          let sender = 'Server';
-          const senderMatch = message.match(/<span style='color: #[A-F0-9]+'>(.*?)<\/span>/);
-          if (senderMatch && senderMatch[1]) {
-            sender = senderMatch[1];
-          }
+          // Extract sender and clean content
+          const sender = extractSender(message);
+          const cleanContent = cleanHtmlTags(message.replace(/<span style='color: #[A-F0-9]+'>(.*?)<\/span>/, ''));
           
           setMessages(prevMessages => [...prevMessages, {
             id: Date.now().toString(),
-            content: message,
+            content: cleanContent,
             sender: sender,
             timestamp: new Date().toISOString(),
-            isHtml: true,
+            isHtml: false, // No longer HTML since we cleaned it
             isSent: sender === currentUser?.username
           }]);
         } 
@@ -269,7 +287,7 @@ const ChatInterface = ({ conversation, currentUser }) => {
         else {
           setMessages(prevMessages => [...prevMessages, {
             id: Date.now().toString(),
-            content: message,
+            content: cleanHtmlTags(message),
             sender: 'Unknown',
             timestamp: new Date().toISOString(),
             isHtml: false,
@@ -419,23 +437,26 @@ const ChatInterface = ({ conversation, currentUser }) => {
                       const match = message.match(regex);
                       if (match) {
                         senderName = match[1];
-                        messageContent = match[2];
+                        // Clean up HTML tags and timestamp from the message content
+                        messageContent = match[2].replace(/^\[[\d:]+\]\s*/, '').replace(/<[^>]*>/g, '');
                         isOwnMessage = userUsername && (
                           senderName.includes(userUsername) || 
                           senderName.includes(`User_${userId}`)
                         );
                         
-                        // Extraire l'horodatage s'il est présent
+                        // We'll still extract the timestamp for the message bubble display
                         const timeRegex = /\[(.*?)\]/;
                         const timeMatch = message.match(timeRegex);
                         if (timeMatch) {
                           messageTime = timeMatch[1];
                         }
                       } else {
-                        messageContent = message;
+                        // Remove timestamp and HTML tags
+                        messageContent = message.replace(/^\[[\d:]+\]\s*/, '').replace(/<[^>]*>/g, '');
                       }
                     } else {
-                      messageContent = message;
+                      // Remove timestamp and HTML tags
+                      messageContent = message.replace(/^\[[\d:]+\]\s*/, '').replace(/<[^>]*>/g, '');
                     }
                   } else if (message.isRawText && message.content) {
                     // Message avec format HTML
@@ -444,28 +465,36 @@ const ChatInterface = ({ conversation, currentUser }) => {
                       const match = message.content.match(regex);
                       if (match) {
                         senderName = match[1];
-                        messageContent = match[2];
+                        // Clean up timestamp and HTML tags from the message content
+                        messageContent = match[2].replace(/^\[[\d:]+\]\s*/, '').replace(/<[^>]*>/g, '');
                         isOwnMessage = userUsername && (
                           senderName.includes(userUsername) || 
                           senderName.includes(`User_${userId}`)
                         );
                         
-                        // Extraire l'horodatage s'il est présent
+                        // We'll still extract the timestamp for the message bubble display
                         const timeRegex = /\[(.*?)\]/;
                         const timeMatch = message.content.match(timeRegex);
                         if (timeMatch) {
                           messageTime = timeMatch[1];
                         }
                       } else {
-                        messageContent = message.content;
+                        // Remove timestamp and HTML tags
+                        messageContent = message.content.replace(/^\[[\d:]+\]\s*/, '').replace(/<[^>]*>/g, '');
                       }
                     } else {
-                      messageContent = message.content;
+                      // Remove timestamp and HTML tags
+                      messageContent = typeof message.content === 'string' ? 
+                        message.content.replace(/^\[[\d:]+\]\s*/, '').replace(/<[^>]*>/g, '') : 
+                        message.content;
                     }
-                  } else if (message.sender || message.senderName) {
+                  }
+                  else if (message.sender || message.senderName) {
                     // Message avec expéditeur explicite
                     senderName = message.senderName || message.sender;
-                    messageContent = message.content;
+                    // Clean up HTML tags if the content is a string
+                    messageContent = typeof message.content === 'string' ? 
+                      message.content.replace(/<[^>]*>/g, '') : message.content;
                     isOwnMessage = userUsername && (
                       message.sender === userId || 
                       message.senderName === userUsername
