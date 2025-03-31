@@ -2,7 +2,7 @@ import AuthService from './AuthService';
 
 class RoomService {
   constructor() {
-    this.baseUrl = process.env.REACT_APP_API_URL || 'http://195.35.1.108:3630';
+    this.baseUrl = process.env.REACT_APP_API_URL || 'http://100.86.59.48:3630';
     this.rooms = [];
     this.roomListeners = [];
   }

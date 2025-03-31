@@ -4,8 +4,8 @@
 class ChatService {
   constructor() {
     // Utiliser les URLs du VPS depuis les variables d'environnement
-    this.baseUrl = process.env.REACT_APP_API_URL || 'http://195.35.1.108:3630/';
-    this.wsUrl = process.env.REACT_APP_WEBSOCKET_URL || 'ws://195.35.1.108:3630/ws';
+    this.baseUrl = process.env.REACT_APP_API_URL || 'http://100.86.59.48:3630/';
+    this.wsUrl = process.env.REACT_APP_WEBSOCKET_URL || 'ws://100.86.59.48:3630/ws';
     this.socket = null;
     this.messageListeners = [];
     this.connectionListeners = [];
